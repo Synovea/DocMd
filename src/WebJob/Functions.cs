@@ -112,7 +112,7 @@ namespace DocMd.WebJob
 
             }
 
-            await Shared.Helpers.QueueHelper.SendQueueMessage("renders", mergeSet);
+            await WebJob.Helpers.QueueHelper.SendQueueMessage("renders", mergeSet);
         }
 
         [Singleton]
@@ -169,7 +169,7 @@ namespace DocMd.WebJob
                         File.Copy(file, file.Replace(repoPath, htmlPath).Replace(".md", ".html"), true);
                     }
 
-                    await Shared.Helpers.QueueHelper.SendQueueMessage("search-indexes", file.Replace(repoPath, htmlPath).Replace(".md", ".html"));
+                    await WebJob.Helpers.QueueHelper.SendQueueMessage("search-indexes", file.Replace(repoPath, htmlPath).Replace(".md", ".html"));
                 }
                 catch (Exception error)
                 {
@@ -182,7 +182,7 @@ namespace DocMd.WebJob
                 change.Path = change.Path.Replace(repoPath, htmlPath).Replace(".md", ".html");
             }
 
-            await Shared.Helpers.QueueHelper.SendQueueMessage("cleanups", mergeSet);
+            await WebJob.Helpers.QueueHelper.SendQueueMessage("cleanups", mergeSet);
         }
 
         [Singleton]
@@ -200,7 +200,7 @@ namespace DocMd.WebJob
 
                         File.Delete(change.Path);
 
-                        await Shared.Helpers.QueueHelper.SendQueueMessage("search-indexes-remove", change.Path);
+                        await WebJob.Helpers.QueueHelper.SendQueueMessage("search-indexes-remove", change.Path);
                     }
                 }
                 catch (Exception error)
@@ -209,7 +209,7 @@ namespace DocMd.WebJob
                 }
             }
 
-            await Shared.Helpers.QueueHelper.SendQueueMessage("toc-indexes", mergeSet);
+            await WebJob.Helpers.QueueHelper.SendQueueMessage("toc-indexes", mergeSet);
         }
 
         [Singleton]
