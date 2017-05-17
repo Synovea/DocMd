@@ -7,28 +7,29 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Options;
 
 namespace DocMd.Site.Controllers
 {
     public class ContentController : Controller
     {
-        private readonly IConfiguration _configuration;
+        private readonly ContentOptions _contentOptions;
         private readonly IHostingEnvironment _hostingEnvironment;
 
-        public ContentController(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
+        public ContentController(IOptions<ContentOptions> contentOptions, IHostingEnvironment hostingEnvironment)
         {
-            _configuration = configuration;
+            _contentOptions = contentOptions.Value;
             _hostingEnvironment = hostingEnvironment;
         }
 
         public IActionResult Index()
         {
-            if (!string.IsNullOrWhiteSpace(_configuration["Content:Redirect"]))
+            if (!string.IsNullOrWhiteSpace(_contentOptions.Redirect))
             {
-                return RedirectToAction(nameof(Render), new { path = _configuration["Content:Redirect"] });
+                return RedirectToAction(nameof(Render), new { path = _contentOptions.Redirect });
             }
 
-            var basePath = Path.Combine(_hostingEnvironment.ContentRootPath, _configuration["Content:HtmlPath"]);
+            var basePath = Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.HtmlPath);
             var baseDirectory = new System.IO.DirectoryInfo(basePath);
 
             var directories = System.IO.Directory.GetDirectories(basePath, "*", System.IO.SearchOption.TopDirectoryOnly);
@@ -54,10 +55,10 @@ namespace DocMd.Site.Controllers
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(_configuration["Content:Layout"]) &&
-                System.IO.File.Exists(Path.Combine(_hostingEnvironment.ContentRootPath, _configuration["Content:Layout"])))
+            if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
+                System.IO.File.Exists(Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.Layout)))
             {
-                ViewBag.Layout = _configuration["Content:Layout"];
+                ViewBag.Layout = _contentOptions.Layout;
             }
             else
             {
@@ -69,7 +70,7 @@ namespace DocMd.Site.Controllers
 
         public ActionResult Render(string path, bool currentToC = false)
         {
-            var basePath = Path.Combine(_hostingEnvironment.ContentRootPath, _configuration["Content:HtmlPath"]);
+            var basePath = Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.HtmlPath);
             var baseDirectory = new System.IO.DirectoryInfo(basePath);
 
             var directories = System.IO.Directory.GetDirectories(basePath);
@@ -209,7 +210,7 @@ namespace DocMd.Site.Controllers
                 }
 
                 if (!layout.Equals("~/Views/Shared/_Layout.cshtml"))
-                    ViewBag.Layout = $"~{_configuration["Content:HtmlPath"]}/{layout.ToLower().Replace(basePath.ToLower(), "").Replace("\\", "/")}";
+                    ViewBag.Layout = $"~{_contentOptions.HtmlPath}/{layout.ToLower().Replace(basePath.ToLower(), "").Replace("\\", "/")}";
                 else
                     ViewBag.Layout = layout;
 

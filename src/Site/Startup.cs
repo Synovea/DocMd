@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using DocMd.Site.Data;
 using DocMd.Site.Models;
 using DocMd.Site.Services;
+using Microsoft.AspNetCore.Mvc.Razor;
 
 namespace DocMd.Site
 {
@@ -53,7 +50,7 @@ namespace DocMd.Site
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
-            services.AddSingleton<IConfiguration>(Configuration);
+            services.Configure<ContentOptions>(Configuration.GetSection("Content"));
 
             services.AddSingleton<Shared.Helpers.QueueHelper, Shared.Helpers.QueueHelper>();
         }
@@ -85,7 +82,7 @@ namespace DocMd.Site
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Content}/{action=Index}/{id?}");
             });
         }
     }

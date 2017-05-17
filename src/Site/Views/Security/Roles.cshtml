@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Microsoft.AspNet.Identity.EntityFramework.IdentityRole>
+
+@{
+    ViewBag.Title = "Manage Security Roles";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <section id="roleList">
+            <h4>Roles.</h4>
+            <hr />
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <td>Role Name</td>
+                        <td align="right">Users</td>
+                    </tr>
+                </thead>
+
+                @foreach (var role in Model)
+                {
+                    <tr>
+                        <td>@Html.ActionLink(role.Name, "Role", "Security", routeValues: new { id = role.Name }, htmlAttributes: null) </td>
+                        <td align="right">@role.Users.Count</td>
+                    </tr>
+                }
+            </table>
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section id="loginForm">
+            @using (Html.BeginForm("Roles", "Security", new { }, FormMethod.Post, new { @class = "form-vertical", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <h4>Add a new role.</h4>
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    <div class="col-md-8">
+                        <input class="form-control" name="RoleName" id="RoleName" />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="submit" value="Add Role" class="btn btn-default btn-block" />
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole>
+
+@{
+    ViewBag.Title = "Manage Security Role";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>@ViewBag.RoleName</h4>
+        <hr />
+
+        @using (Html.BeginForm("RolePost", "Security", new { id = ViewBag.RoleName }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+        {
+            <section id="roleList">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <td width="30px">&nbsp;</td>
+                            <td>User</td>
+                        </tr>
+                    </thead>
+
+                    @foreach (var user in ViewBag.Users)
+                    {
+                        <tr>
+                            <td width="30px"><input type="checkbox" id="user__@user.Id" name="user__@user.Id" @((Model.Where(m => m.UserId.Equals(user.Id)).Count() == 1) ? "checked" : "") /></td>
+                            <td>@user.UserName</td>
+                        </tr>
+                    }
+                </table>
+            </section>
+            <div class="row">
+                <div class="col-md-8">
+                    <input type="submit" value="Save" class="btn btn-default" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
