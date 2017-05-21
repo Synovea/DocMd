@@ -2,6 +2,8 @@
 using LibGit2Sharp;
 using LibGit2Sharp.Handlers;
 using Markdig;
+using Microsoft.Azure.Search;
+using Microsoft.Azure.Search.Models;
 using Microsoft.Azure.WebJobs;
 using System;
 using System.Collections.Generic;
@@ -74,7 +76,7 @@ namespace DocMd.WebJob
 
                 using (var repo = new Repository(repoPath))
                 {
-                    LibGit2Sharp.PullOptions options = new LibGit2Sharp.PullOptions()
+                    PullOptions options = new PullOptions()
                     {
                         FetchOptions = new FetchOptions()
                         {
@@ -109,23 +111,52 @@ namespace DocMd.WebJob
                         });
                     }
                 }
-
             }
 
-            await WebJob.Helpers.QueueHelper.SendQueueMessage("renders", mergeSet);
+            using (var repo = new Repository(repoPath))
+            {
+                mergeSet.Sha = repo.Head.Tip.Sha;
+                mergeSet.Author = repo.Head.Tip.Author.Name;
+                mergeSet.LastRevisionDate = repo.Head.Tip.Author.When;
+
+                foreach (var change in mergeSet.Changes)
+                {
+                    change.RepoName = mergeSet.RepoName;
+                    change.RepoPath = mergeSet.RepoPath;
+
+                    var history = repo.Commits.QueryBy(change.Path);
+
+                    foreach (var entry in history)
+                    {
+                        change.Revisions.Add(new Revision()
+                        {
+                            Sha = entry.Commit.Sha,
+                            Author = entry.Commit.Author.Name,
+                            LastRevisionDate = entry.Commit.Author.When
+                        });
+                    }
+
+                    if (change.Path.Replace(repoPath, "").ToLower().StartsWith("\\.git"))
+                    {
+                        continue;
+                    }
+
+                    await Helpers.QueueHelper.SendQueueMessage("renders", change);
+                }
+            }
         }
 
         [Singleton]
-        public static async Task ProcessRenderMessageAsync([QueueTrigger("renders")] MergeSet mergeSet, TextWriter log)
+        public static async Task ProcessRenderMessageAsync([QueueTrigger("renders")] Node change, TextWriter log)
         {
             var sessionId = Guid.NewGuid();
 
-            var repoPath = mergeSet.RepoPath;
+            var repoPath = change.RepoPath;
 
             var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["outputPath"]).FullName;
-            var htmlPath = Path.Combine(outputBasePath, mergeSet.RepoName);
+            var htmlPath = Path.Combine(outputBasePath, change.RepoName);
 
-            await LogAsync($"Render markdown message received '{mergeSet.RepoName}'.", sessionId, log);
+            await LogAsync($"Render markdown message received '{change.RepoName}'.", sessionId, log);
 
             if (!Directory.Exists(htmlPath))
             {
@@ -134,55 +165,42 @@ namespace DocMd.WebJob
                 Directory.CreateDirectory(htmlPath);
             }
 
-            var files = mergeSet.Changes.Select(m => m.Path);
+            var file = change.Path;
+            change.Path = change.Path.Replace(repoPath, htmlPath).Replace(".md", ".html");
 
-            foreach (var file in files)
+            try
             {
-                try
+                if (file.ToLower().EndsWith(".md"))
                 {
-                    var currentFileInfo = new FileInfo(file);
+                    await LogAsync($"Rendering file '{file}'.", sessionId, log);
 
-                    if (currentFileInfo.Directory.FullName.Replace(repoPath, "").ToLower().StartsWith("\\.git"))
-                    {
-                        continue;
-                    }
+                    var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+                    var renderedContent = Markdown.ToHtml(File.ReadAllText(file), pipeline);
 
-                    if (file.ToLower().EndsWith(".md"))
-                    {
-                        await LogAsync($"Rendering file '{file}'.", sessionId, log);
+                    var renderedFilename = file.Replace(repoPath, htmlPath).Replace(".md", ".html");
 
-                        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-                        var renderedContent = Markdown.ToHtml(File.ReadAllText(file), pipeline);
+                    await CreateDirectoryAsync(log, sessionId, renderedFilename);
 
-                        var renderedFilename = file.Replace(repoPath, htmlPath).Replace(".md", ".html");
+                    File.WriteAllText(renderedFilename, renderedContent);
+                    File.WriteAllText($"{renderedFilename}.meta", Newtonsoft.Json.JsonConvert.SerializeObject(change.Revisions));
 
-                        await CreateDirectoryAsync(log, sessionId, renderedFilename);
-
-                        File.WriteAllText(renderedFilename, renderedContent);
-                    }
-                    else
-                    {
-                        await CreateDirectoryAsync(log, sessionId, file.Replace(repoPath, htmlPath));
-
-                        await LogAsync($"Copying file '{file}'.", sessionId, log);
-
-                        File.Copy(file, file.Replace(repoPath, htmlPath).Replace(".md", ".html"), true);
-                    }
-
-                    await WebJob.Helpers.QueueHelper.SendQueueMessage("search-indexes", file.Replace(repoPath, htmlPath).Replace(".md", ".html"));
+                    await Helpers.QueueHelper.SendQueueMessage("search-indexes", change);
                 }
-                catch (Exception error)
+                else
                 {
-                    await LogAsync($"Failure copying file '{file}' with error '{error.Message}'", sessionId, log);
+                    await CreateDirectoryAsync(log, sessionId, file.Replace(repoPath, htmlPath));
+
+                    await LogAsync($"Copying file '{file}'.", sessionId, log);
+
+                    File.Copy(file, file.Replace(repoPath, htmlPath).Replace(".md", ".html"), true);
                 }
             }
-
-            foreach (var change in mergeSet.Changes)
+            catch (Exception error)
             {
-                change.Path = change.Path.Replace(repoPath, htmlPath).Replace(".md", ".html");
+                await LogAsync($"Failure copying file '{file}' with error '{error.Message}'", sessionId, log);
             }
 
-            await WebJob.Helpers.QueueHelper.SendQueueMessage("cleanups", mergeSet);
+            await Helpers.QueueHelper.SendQueueMessage("cleanups", change);
         }
 
         [Singleton]
@@ -200,7 +218,7 @@ namespace DocMd.WebJob
 
                         File.Delete(change.Path);
 
-                        await WebJob.Helpers.QueueHelper.SendQueueMessage("search-indexes-remove", change.Path);
+                        await Helpers.QueueHelper.SendQueueMessage("search-indexes-remove", change.Path);
                     }
                 }
                 catch (Exception error)
@@ -209,7 +227,7 @@ namespace DocMd.WebJob
                 }
             }
 
-            await WebJob.Helpers.QueueHelper.SendQueueMessage("toc-indexes", mergeSet);
+            await Helpers.QueueHelper.SendQueueMessage("toc-indexes", mergeSet);
         }
 
         [Singleton]
@@ -253,7 +271,7 @@ namespace DocMd.WebJob
                     await LogAsync($"Failure indexing directory '{contentDirectory}' with error '{error.Message}'", sessionId, log);
                 }
             }
-        } 
+        }
 
         private static List<Shared.Content.Node> GetTableOfContentsForDirectory(string directory, string basePath)
         {
@@ -323,13 +341,49 @@ namespace DocMd.WebJob
             return toc;
         }
 
-        public static async Task ProcessSearchMessageAsync([QueueTrigger("search-indexes")] string htmlFile, TextWriter log)
+        public static async Task ProcessSearchMessageAsync([QueueTrigger("search-indexes")] Node change, TextWriter log)
         {
             var sessionId = Guid.NewGuid();
+            var htmlFile = change.Path;
 
             try
             {
                 await LogAsync($"Indexing file '{htmlFile}' for Search", sessionId, log);
+
+                var searchServiceClient = CreateSearchServiceClient();
+
+                CreateIndex(searchServiceClient);
+
+                ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient("documents");
+
+                var document = indexClient.Documents.Get<Search.SearchDocument>(htmlFile);
+
+                var titleRegexPattern = "(?s)(?<=<h1.+>)(.+?)(?=</h1>)";
+                var excerptRegexPattern = "(?s)(?<=<p>)(.+?)(?=</p>)";
+
+                var content = File.ReadAllText(htmlFile);
+
+                var titleMatch = System.Text.RegularExpressions.Regex.Match(content, titleRegexPattern);
+                var excerptMatch = System.Text.RegularExpressions.Regex.Match(content, excerptRegexPattern);
+
+                if (document == null)
+                {
+                    document = new Search.SearchDocument()
+                    {
+                        DocumentId = change.Path
+                    };
+                }
+
+                document.Title = (titleMatch.Success) ? titleMatch.Value : "No title found";
+                document.Excerpt = (excerptMatch.Success) ? System.Text.RegularExpressions.Regex.Replace(excerptMatch.Value, "<[^>]*>", "") : "No excerpt found";
+                document.Body = content;
+                document.Author = change.Author;
+                document.LastRevisionDate = change.LastRevisionDate;
+                document.Sha = change.Sha;
+
+                UploadDocuments(indexClient, new List<Search.SearchDocument>() {
+                    document
+                });
             }
             catch (Exception error)
             {
@@ -344,6 +398,21 @@ namespace DocMd.WebJob
             try
             {
                 await LogAsync($"Removing file from index '{htmlFile}' for Search", sessionId, log);
+
+                var searchServiceClient = CreateSearchServiceClient();
+
+                CreateIndex(searchServiceClient);
+
+                ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient("documents");
+
+                var document = indexClient.Documents.Get<Search.SearchDocument>(htmlFile);
+
+                if (document != null)
+                {
+                    UploadDocuments(indexClient, new List<Search.SearchDocument>() {
+                        document
+                    });
+                }
             }
             catch (Exception error)
             {
@@ -375,6 +444,68 @@ namespace DocMd.WebJob
         private static Signature GetRepoSignature()
         {
             return new Signature("Stephan Johnson", "stephan@johnson.org.za", new DateTimeOffset(DateTime.Now));
+        }
+
+        private static SearchServiceClient CreateSearchServiceClient()
+        {
+            string searchServiceName = ConfigurationManager.AppSettings["searchServiceName"];
+            string adminApiKey = ConfigurationManager.AppSettings["searchAdminApiKey"];
+
+            SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(adminApiKey));
+            return serviceClient;
+        }
+        private static void DeleteIndexIfExists(SearchServiceClient serviceClient, string indexName = "documents")
+        {
+            if (serviceClient.Indexes.Exists(indexName))
+            {
+                serviceClient.Indexes.Delete(indexName);
+            }
+        }
+
+        private static void CreateIndex(SearchServiceClient serviceClient, string indexName = "documents")
+        {
+            if (!serviceClient.Indexes.Exists(indexName))
+            {
+                var definition = new Microsoft.Azure.Search.Models.Index()
+                {
+                    Name = indexName,
+                    Fields = FieldBuilder.BuildForType<Search.SearchDocument>()
+                };
+
+                serviceClient.Indexes.Create(definition);
+            }
+        }
+
+        private static void UploadDocuments(ISearchIndexClient indexClient, List<Search.SearchDocument> documents)
+        {
+            var batch = IndexBatch.Upload(documents.ToArray());
+
+            try
+            {
+                indexClient.Documents.Index(batch);
+            }
+            catch (IndexBatchException e)
+            {
+                throw new Exception(
+                    $"Failed to index some of the documents: {String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key))}",
+                    e);
+            }
+        }
+
+        private static void RemoveDocuments(ISearchIndexClient indexClient, List<Search.SearchDocument> documents)
+        {
+            var batch = IndexBatch.Delete(documents.ToArray());
+
+            try
+            {
+                indexClient.Documents.Index(batch);
+            }
+            catch (IndexBatchException e)
+            {
+                throw new Exception(
+                    $"Failed to remove some of the documents: {String.Join(", ", e.IndexingResults.Where(r => !r.Succeeded).Select(r => r.Key))}",
+                    e);
+            }
         }
 
         private static async Task LogAsync(string message, Guid identifier, TextWriter log)
