@@ -210,7 +210,7 @@ namespace DocMd.Site.Controllers
                 }
 
                 if (!layout.Equals("~/Views/Shared/_Layout.cshtml"))
-                    ViewBag.Layout = $"~{_contentOptions.HtmlPath}/{layout.ToLower().Replace(basePath.ToLower(), "").Replace("\\", "/")}";
+                    ViewBag.Layout = $"~/{_contentOptions.HtmlPath}/{layout.ToLower().Replace(basePath.ToLower(), "").Replace("\\", "/")}";
                 else
                     ViewBag.Layout = layout;
 
