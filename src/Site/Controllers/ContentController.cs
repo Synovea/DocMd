@@ -240,6 +240,11 @@ namespace DocMd.Site.Controllers
             }
         }
 
+        public IActionResult Error()
+        {
+            return View();
+        }
+
         private static string GetRoleName(Shared.Security rule)
         {
             return rule.Role.ToUpper();
