@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Site", "src\Site\Site.csproj", "{2CCF2BB0-DE9F-43F6-9E24-37628FA6C139}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "src\Shared\Shared.csproj", "{4BBC5444-4111-40A3-B3F3-78B009528480}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "src\Shared\Shared.csproj", "{4BBC5444-4111-40A3-B3F3-78B009528480}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebJob", "src\WebJob\WebJob.csproj", "{97551359-CFF9-493A-A4EB-8C47F5916027}"
 EndProject
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2CCF2BB0-DE9F-43F6-9E24-37628FA6C139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2CCF2BB0-DE9F-43F6-9E24-37628FA6C139}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2CCF2BB0-DE9F-43F6-9E24-37628FA6C139}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2CCF2BB0-DE9F-43F6-9E24-37628FA6C139}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4BBC5444-4111-40A3-B3F3-78B009528480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4BBC5444-4111-40A3-B3F3-78B009528480}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BBC5444-4111-40A3-B3F3-78B009528480}.Release|Any CPU.ActiveCfg = Release|Any CPU
