@@ -1,0 +1,15 @@
+﻿@model System.IO.FileInfo
+@{
+    ViewBag.Title = Model.Name;
+
+    Layout = ViewBag.Layout;
+}
+
+@if (ViewBag.MimeType.Equals("text/html"))
+{
+    @Html.Raw(System.IO.File.ReadAllText(Model.FullName));
+}
+else
+{
+    System.IO.File.ReadAllText(Model.FullName);
+}

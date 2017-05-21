@@ -1,0 +1,47 @@
+﻿@model Dictionary<string, List<DocMd.Shared.Content.Node>>
+
+@{
+    ViewBag.Title = "Welcome";
+
+    Layout = ViewBag.Layout;
+
+    var col = "col-md-";
+
+    if (Model.Keys.Count == 1)
+    {
+        col += "8";
+    }
+    else if (Model.Keys.Count == 2)
+    {
+        col += "6";
+    }
+    else
+    {
+        col += "4";
+    }
+}
+
+<div class="main">
+    <div class="section">
+        <div class="container">
+            <div class="row">
+                @foreach (var folder in Model.Keys)
+                {
+                    <div class="@col">
+                        <h1>@folder</h1>
+
+                        @foreach (var toc in Model[folder].OrderByDescending(m => m.ChangedDateTime).Take(15))
+                        {
+                            <div class="media">
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="@toc.Path">@toc.Title</a> <small>@toc.ChangedDateTime.ToString("dd MMMM yyyy hh:mm")</small></h4>
+                                    @toc.Excerpt
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
