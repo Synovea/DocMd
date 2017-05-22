@@ -40,7 +40,7 @@ namespace DocMd.WebJob.Git
             }
         }
 
-        public List<Revision> Revisions { get; set; }
+        public List<Revision> Revisions { get; set; } = new List<Revision>();
 
         public Revision LastRevision
         {
