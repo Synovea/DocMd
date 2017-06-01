@@ -144,6 +144,8 @@ namespace DocMd.WebJob
                     await Helpers.QueueHelper.SendQueueMessage("renders", change);
                 }
             }
+
+            await Helpers.QueueHelper.SendQueueMessage("cleanups", mergeSet);
         }
 
         [Singleton]
@@ -151,56 +153,57 @@ namespace DocMd.WebJob
         {
             var sessionId = Guid.NewGuid();
 
-            var repoPath = change.RepoPath;
-
-            var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["outputPath"]).FullName;
-            var htmlPath = Path.Combine(outputBasePath, change.RepoName);
-
-            await LogAsync($"Render markdown message received '{change.RepoName}'.", sessionId, log);
-
-            if (!Directory.Exists(htmlPath))
+            if (!change.Status.Equals(ChangeKind.Deleted))
             {
-                await LogAsync($"Html path not found, creating directory '{htmlPath}'.", sessionId, log);
+                var repoPath = change.RepoPath;
 
-                Directory.CreateDirectory(htmlPath);
-            }
+                var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["outputPath"]).FullName;
+                var htmlPath = Path.Combine(outputBasePath, change.RepoName);
 
-            var file = change.Path;
-            change.Path = change.Path.Replace(repoPath, htmlPath).Replace(".md", ".html");
+                await LogAsync($"Render markdown message received '{change.RepoName}'.", sessionId, log);
 
-            try
-            {
-                if (file.ToLower().EndsWith(".md"))
+                if (!Directory.Exists(htmlPath))
                 {
-                    await LogAsync($"Rendering file '{file}'.", sessionId, log);
+                    await LogAsync($"Html path not found, creating directory '{htmlPath}'.", sessionId, log);
 
-                    var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-                    var renderedContent = Markdown.ToHtml(File.ReadAllText(file), pipeline);
-
-                    var renderedFilename = file.Replace(repoPath, htmlPath).Replace(".md", ".html");
-
-                    await CreateDirectoryAsync(log, sessionId, renderedFilename);
-
-                    File.WriteAllText(renderedFilename, renderedContent);
-                    File.WriteAllText($"{renderedFilename}.meta", Newtonsoft.Json.JsonConvert.SerializeObject(change.Revisions));
-
-                    await Helpers.QueueHelper.SendQueueMessage("search-indexes", change);
+                    Directory.CreateDirectory(htmlPath);
                 }
-                else
+
+                var file = change.Path;
+                change.Path = change.Path.Replace(repoPath, htmlPath).Replace(".md", ".html");
+
+                try
                 {
-                    await CreateDirectoryAsync(log, sessionId, file.Replace(repoPath, htmlPath));
+                    if (file.ToLower().EndsWith(".md"))
+                    {
+                        await LogAsync($"Rendering file '{file}'.", sessionId, log);
 
-                    await LogAsync($"Copying file '{file}'.", sessionId, log);
+                        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+                        var renderedContent = Markdown.ToHtml(File.ReadAllText(file), pipeline);
 
-                    File.Copy(file, file.Replace(repoPath, htmlPath).Replace(".md", ".html"), true);
+                        var renderedFilename = file.Replace(repoPath, htmlPath).Replace(".md", ".html");
+
+                        await CreateDirectoryAsync(log, sessionId, renderedFilename);
+
+                        File.WriteAllText(renderedFilename, renderedContent);
+                        File.WriteAllText($"{renderedFilename}.meta", Newtonsoft.Json.JsonConvert.SerializeObject(change.Revisions));
+
+                        await Helpers.QueueHelper.SendQueueMessage("search-indexes", change);
+                    }
+                    else
+                    {
+                        await CreateDirectoryAsync(log, sessionId, file.Replace(repoPath, htmlPath));
+
+                        await LogAsync($"Copying file '{file}'.", sessionId, log);
+
+                        File.Copy(file, file.Replace(repoPath, htmlPath).Replace(".md", ".html"), true);
+                    }
+                }
+                catch (Exception error)
+                {
+                    await LogAsync($"Failure copying file '{file}' with error '{error.Message}'", sessionId, log);
                 }
             }
-            catch (Exception error)
-            {
-                await LogAsync($"Failure copying file '{file}' with error '{error.Message}'", sessionId, log);
-            }
-
-            await Helpers.QueueHelper.SendQueueMessage("cleanups", change);
         }
 
         [Singleton]

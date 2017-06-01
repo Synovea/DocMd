@@ -84,6 +84,11 @@ namespace DocMd.Site
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Content}/{action=Index}/{id?}");
+
+                routes.MapRoute(
+                    name: "render",
+                    template: "{*path}",
+                    defaults: new { Controller = "Content", Action = "Render" });
             });
         }
     }
