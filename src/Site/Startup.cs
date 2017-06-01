@@ -51,6 +51,7 @@ namespace DocMd.Site
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
             services.Configure<ContentOptions>(Configuration.GetSection("Content"));
+            services.Configure<VersionOptions>(Configuration.GetSection("Version"));
             services.AddSingleton<IConfiguration>(Configuration);
 
             services.AddSingleton<Shared.Helpers.QueueHelper, Shared.Helpers.QueueHelper>();

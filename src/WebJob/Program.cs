@@ -15,7 +15,17 @@ namespace DocMd.WebJob
         // AzureWebJobsDashboard and AzureWebJobsStorage
         static void Main()
         {
-            Console.WriteLine("Doc Md Web Job v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            Console.WriteLine($"Doc Md Web Job v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
+
+            var sha = ConfigurationManager.AppSettings["Sha"];
+            var commitDateTime = ConfigurationManager.AppSettings["CommitDateTime"];
+            var commitLink = ConfigurationManager.AppSettings["CommitLink"];
+
+            Console.WriteLine();
+            Console.WriteLine($"Sha\t\t{sha}");
+            Console.WriteLine($"Date Time\t\t{commitDateTime}");
+            Console.WriteLine($"Link\t\t{commitLink}");
+            Console.WriteLine();
 
             var config = new JobHostConfiguration();
 

@@ -23,7 +23,7 @@ namespace DocMd.WebJob
         {
             var sessionId = Guid.NewGuid();
 
-            var reposPath = new DirectoryInfo(ConfigurationManager.AppSettings["repoPath"]).FullName;
+            var reposPath = new DirectoryInfo(ConfigurationManager.AppSettings["RepositoryPath"]).FullName;
             var repoPath = Path.Combine(reposPath, merge.RepositoryName);
 
             await LogAsync($"Merge message received for commit '{merge.CommitId}'.", sessionId, log);
@@ -157,7 +157,7 @@ namespace DocMd.WebJob
             {
                 var repoPath = change.RepoPath;
 
-                var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["outputPath"]).FullName;
+                var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["HtmlPath"]).FullName;
                 var htmlPath = Path.Combine(outputBasePath, change.RepoName);
 
                 await LogAsync($"Render markdown message received '{change.RepoName}'.", sessionId, log);
@@ -238,7 +238,7 @@ namespace DocMd.WebJob
         {
             var sessionId = Guid.NewGuid();
 
-            var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["outputPath"]).FullName;
+            var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["HtmlPath"]).FullName;
             var htmlPath = Path.Combine(outputBasePath, mergeSet.RepoName);
 
             await LogAsync($"Clearing Table of Content files.", sessionId, log);
