@@ -1,4 +1,5 @@
 ﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -71,8 +72,8 @@
 
     <!-- 
 
-        Version: @Version.Sha
-        Commit Date: @Version.CommitDateTime.ToString("yyyy/mm/dd hh:MM")
+        Version: @Version.Value.Sha
+        Commit Date: @Version.Value.CommitDateTime.ToString("yyyy/mm/dd hh:MM")
 
      -->
 </body>

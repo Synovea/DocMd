@@ -3,5 +3,5 @@
 @using DocMd.Site.Models.AccountViewModels
 @using DocMd.Site.Models.ManageViewModels
 @using Microsoft.AspNetCore.Identity
-@inject VersionOptions Version
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject Microsoft.Extensions.Options.IOptions<VersionOptions> Version

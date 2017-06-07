@@ -47,4 +47,18 @@
     <Folder Include="Controllers\Api\" />
   </ItemGroup>
 
+  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
+    <PropertyGroup>
+      <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
+      <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <PublishDirFullPath>$([System.IO.Path]::GetFullPath('$(PublishDir)'))</PublishDirFullPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PostpublishScript" AfterTargets="Publish">
+    <Exec Command="dotnet publish ..\WebJob\ -r $(RuntimeIdentifier) -f $(TargetFramework) -c $(Configuration) -o $(PublishDirFullPath)App_Data\jobs\continuous\WebJob\" />
+  </Target>
 </Project>
