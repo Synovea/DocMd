@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using DocMd.Site.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Site.Controllers
 {
+    [Authorize]
     public class SecurityController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

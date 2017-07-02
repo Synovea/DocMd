@@ -1,0 +1,80 @@
+@model HookViewModel
+@{
+    ViewData["Title"] = "Configure DocMD";
+}
+
+<h2>Setup &amp; Configure DocMD</h2>
+
+<form asp-controller="Setup" asp-action="Complete" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
+    <input asp-for="Secret" type="hidden" value="@ViewBag.Secret" />
+
+    <h4>Setup web hook.</h4>
+    <hr />
+    <div class="form-group">
+        <label class="col-md-2 control-label">Repository Service</label>
+        <div class="col-md-10">
+            <select id="service" class="form-control web-hook">
+                <option value="GitHub" selected>GitHub</option>
+                <option value="VSTS">Visual Studio Team Services</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="RepositoryUrl" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="RepositoryUrl" class="form-control web-hook" />
+            <span asp-validation-for="RepositoryUrl" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="PersonalAccessToken" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="PersonalAccessToken" class="form-control web-hook" />
+            <span asp-validation-for="PersonalAccessToken" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group" id="webHookUrlControl" hidden>
+        <label class="col-md-2 control-label">Web Hook URL</label>
+        <div class="col-md-10">
+            <label class="control-label" id="webHookUrl"></label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <button type="submit" class="btn btn-default">Finish Setup</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+
+        var secret = '@ViewBag.Secret',
+            url = '@ViewBag.Url';
+
+        $('.web-hook').change(function () {
+
+            var selectedServiceValue = $('#service').val(),
+                webHookUrl = url;
+
+            if (selectedServiceValue === 'GitHub') {
+
+                webHookUrl += 'GitHub/' + secret;
+
+            }
+            else if (selectedServiceValue === 'VSTS') {
+
+                webHookUrl += 'TfsGit/' + secret;
+
+            }
+
+            $('#webHookUrl').html(webHookUrl);
+            $('#webHookUrlControl').show();
+
+        });
+
+    </script>
+}
