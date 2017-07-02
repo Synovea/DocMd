@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alertrules_Failure_Anomalies___wefixcode_irdub_name": {
+            "value": null
+        },
+        "components_wefixcode_irdub_name": {
+            "value": null
+        },
+        "searchServices_wefixcode_name": {
+            "value": null
+        },
+        "servers_wefixcode_name": {
+            "value": null
+        },
+        "storageAccounts_wefixcodewebjob_name": {
+            "value": null
+        },
+        "sites_wefixcode_irdub_name": {
+            "value": null
+        },
+        "databases_auth_name": {
+            "value": null
+        },
+        "databases_master_name": {
+            "value": null
+        },
+        "firewallRules_AllowAllWindowsAzureIps_name": {
+            "value": null
+        },
+        "config_web_name": {
+            "value": null
+        },
+        "sites_wefixcode_irdub_serverFarmId": {
+            "value": null
+        }
+    }
+}

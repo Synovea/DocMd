@@ -1,0 +1,397 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "alertrules_Failure_Anomalies___wefixcode_irdub_name": {
+            "defaultValue": "Failure Anomalies - wefixcode-irdub",
+            "type": "String"
+        },
+        "components_wefixcode_irdub_name": {
+            "defaultValue": "wefixcode-irdub",
+            "type": "String"
+        },
+        "searchServices_wefixcode_name": {
+            "defaultValue": "wefixcode",
+            "type": "String"
+        },
+        "servers_wefixcode_name": {
+            "defaultValue": "wefixcode",
+            "type": "String"
+        },
+        "storageAccounts_wefixcodewebjob_name": {
+            "defaultValue": "wefixcodewebjob",
+            "type": "String"
+        },
+        "sites_wefixcode_irdub_name": {
+            "defaultValue": "wefixcode-irdub",
+            "type": "String"
+        },
+        "databases_auth_name": {
+            "defaultValue": "wefixcode/auth",
+            "type": "String"
+        },
+        "databases_master_name": {
+            "defaultValue": "wefixcode/master",
+            "type": "String"
+        },
+        "firewallRules_AllowAllWindowsAzureIps_name": {
+            "defaultValue": "wefixcode/AllowAllWindowsAzureIps",
+            "type": "String"
+        },
+        "config_web_name": {
+            "defaultValue": "wefixcode-irdub/web",
+            "type": "String"
+        },
+        "sites_wefixcode_irdub_serverFarmId": {
+            "defaultValue": "/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/default-service-plan/providers/Microsoft.Web/serverfarms/default-service-plan-irdub",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/microsoft.insights/alertrules/Failure Anomalies - wefixcode-irdub'.",
+            "type": "microsoft.insights/alertrules",
+            "name": "[parameters('alertrules_Failure_Anomalies___wefixcode_irdub_name')]",
+            "apiVersion": "2014-04-01",
+            "location": "North Europe",
+            "tags": {
+                "hidden-link:/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourcegroups/wefixcode-resources/providers/microsoft.insights/components/wefixcode-irdub": "Resource"
+            },
+            "scale": null,
+            "properties": {
+                "name": "[parameters('alertrules_Failure_Anomalies___wefixcode_irdub_name')]",
+                "description": "",
+                "isEnabled": true,
+                "condition": {
+                    "odata.type": "Microsoft.Azure.Management.Insights.Models.ThresholdRuleCondition",
+                    "dataSource": {
+                        "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleMetricDataSource",
+                        "resourceUri": "[resourceId('microsoft.insights/components', parameters('components_wefixcode_irdub_name'))]",
+                        "metricName": "advanced::A3108E3D-5E26-44CF-B232-783F5E20EF10::ewAiAEgAeQBwAGUAcgBpAG8AbgBBAHAAcABsAGkAYwBhAHQAaQBvAG4AUwBpAGQAIgA6AG4AdQBsAGwALAAiAEgAeQBwAGUAcgBpAG8AbgBTAHUAYgBqAGUAYwB0AFMAaQBkACIAOgBuAHUAbABsACwAIgBIAHkAcABlAHIAaQBvAG4ATwBiAHMAZQByAHYAZQByAFMAaQBkACIAOgBuAHUAbABsACwAIgBDAHUAcwB0AG8AbQBlAHIAQQBjAGMAbwB1AG4AdABJAGQAIgA6ACIAMAAwADAAMAAwADAAMAAwAC0AMAAwADAAMAAtADAAMAAwADAALQAwADAAMAAwAC0AMAAwADAAMAAwADAAMAAwADAAMAAwADAAIgAsACIAQQBwAHAAbABpAGMAYQB0AGkAbwBuAE4AYQBtAGUAIgA6AG4AdQBsAGwALAAiAEEAcABwAGwAaQBjAGEAdABpAG8AbgBJAGQAIgA6AG4AdQBsAGwALAAiAFAAcgBvAGYAaQBsAGUASQBkACIAOgAwACwAIgBXAGkAbgBkAG8AdwBTAGkAegBlAEkAbgBNAGkAbgB1AHQAZQBzACIAOgA2ADAALAAiAE0AZQB0AHIAaQBjAE4AYQBtAGUAIgA6ACIAIgAsACIAVABoAHIAZQBzAGgAbwBsAGQAIgA6ADIALgAwACwAIgBBAGwAZQByAHQAVABlAG0AcABsAGEAdABlAEkAZAAiADoAIgAiACwAIgBSAHUAbABlAEkAZAAiADoAIgAiACwAIgBSAHUAbABlAE4AYQBtAGUAIgA6ACIAIgAsACIAUgB1AGwAZQBEAGUAcwBjAHIAaQBwAHQAaQBvAG4AIgA6ACIAIgAsACIAUgBlAHMAbwB1AHIAYwBlAEkAZAAiADoAbgB1AGwAbAAsACIAUwB1AGIAcwBjAHIAaQBwAHQAaQBvAG4ASQBkACIAOgBuAHUAbABsACwAIgBBAGcAZwByAGUAZwBhAHQAZQBGAHUAbgBjAHQAaQBvAG4AIgA6ACIAIgAsACIAQwBvAG0AcABhAHIAaQBzAG8AbgBPAHAAZQByAGEAdABvAHIAIgA6ACIAewBcACIAQgBhAHMAZQBsAGkAbgBlAFQAaQBtAGUAcwBwAGEAbgBcACIAOgBcACIAMAAwADoANAAwADoAMAAwAFwAIgAsAFwAIgBJAG4AcwBpAGcAaAB0AHMAUwBlAHIAdgBpAGMAZQBMAGEAZwBcACIAOgBcACIAMAAwADoAMAAwADoAMAAwAFwAIgAsAFwAIgBCAHUAZgBmAGUAcgBUAGkAbQBlAFwAIgA6AFwAIgAwADAAOgAwADEAOgAwADAAXAAiACwAXAAiAEIAbABvAGIAUwB0AG8AcgBhAGcAZQBMAG8AZwBnAGkAbgBnAEUAbgBhAGIAbABlAGQAXAAiADoAZgBhAGwAcwBlACwAXAAiAFUAcwBlAHIAUwB1AHAAcAByAGUAcwBzAGkAbwBuAHMAXAAiADoAbgB1AGwAbAAsAFwAIgBQAHIAbwBmAGkAbABlAEkAZABcACIAOgAwACwAXAAiAEUAbQBhAGkAbABUAHkAcABlAFwAIgA6ADAALABcACIAUgBkAGQARgBhAGkAbAB1AHIAZQBzAFMAcABpAGsAZQBUAGgAcgBlAHMAaABvAGwAZABcACIAOgAzAC4AMAAsAFwAIgBSAGEAdwBQAHIAbwBhAGMAdABpAHYAZQBSAHUAbABlAEMAbwBuAGYAaQBnAFwAIgA6AG4AdQBsAGwAfQAiACwAIgBFAG4AYQBiAGwAZQBTAGUAbgBkAEUAbQBhAGkAbABUAG8AQwB1AHMAdABvAG0AIgA6AGYAYQBsAHMAZQAsACIAQwB1AHMAdABvAG0ARQBtAGEAaQBsAHMARQBuAGMAbwBkAGUAZAAiADoAIgAiACwAIgBFAG4AYQBiAGwAZQBTAGUAbgBkAEUAbQBhAGkAbABUAG8ATwB3AG4AZQByAHMAIgA6AGYAYQBsAHMAZQB9AA=="
+                    },
+                    "threshold": 2,
+                    "windowSize": "PT1H"
+                },
+                "action": {
+                    "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
+                    "sendToServiceOwners": true,
+                    "customEmails": []
+                }
+            },
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_wefixcode_irdub_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/microsoft.insights/components/wefixcode-irdub'.",
+            "type": "microsoft.insights/components",
+            "kind": "web",
+            "name": "[parameters('components_wefixcode_irdub_name')]",
+            "apiVersion": "2014-04-01",
+            "location": "northeurope",
+            "tags": {
+                "hidden-link:/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Web/sites/wefixcode-irdub": "Resource"
+            },
+            "scale": null,
+            "properties": {
+                "ApplicationId": "[parameters('components_wefixcode_irdub_name')]"
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Search/searchServices/wefixcode'.",
+            "type": "Microsoft.Search/searchServices",
+            "sku": {
+                "name": "free"
+            },
+            "name": "[parameters('searchServices_wefixcode_name')]",
+            "apiVersion": "2015-08-19",
+            "location": "North Europe",
+            "scale": null,
+            "properties": {
+                "replicaCount": 1,
+                "partitionCount": 1,
+                "hostingMode": "Default"
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Sql/servers/wefixcode'.",
+            "type": "Microsoft.Sql/servers",
+            "kind": "v12.0",
+            "name": "[parameters('servers_wefixcode_name')]",
+            "apiVersion": "2014-04-01-preview",
+            "location": "North Europe",
+            "scale": null,
+            "properties": {
+                "administratorLogin": "stephan",
+                "administratorLoginPassword": null,
+                "version": "12.0"
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Storage/storageAccounts/wefixcodewebjob'.",
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "name": "[parameters('storageAccounts_wefixcodewebjob_name')]",
+            "apiVersion": "2016-01-01",
+            "location": "northeurope",
+            "tags": {},
+            "scale": null,
+            "properties": {},
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Web/sites/wefixcode-irdub'.",
+            "type": "Microsoft.Web/sites",
+            "kind": "app",
+            "name": "[parameters('sites_wefixcode_irdub_name')]",
+            "apiVersion": "2015-08-01",
+            "location": "North Europe",
+            "tags": {
+                "hidden-related:/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourcegroups/default-service-plan/providers/Microsoft.Web/serverfarms/default-service-plan-irdub": "empty"
+            },
+            "scale": null,
+            "properties": {
+                "name": "[parameters('sites_wefixcode_irdub_name')]",
+                "hostNames": [
+                    "wefixcode.com",
+                    "www.wefixcode.com",
+                    "wefixcode-irdub.azurewebsites.net"
+                ],
+                "enabledHostNames": [
+                    "wefixcode.com",
+                    "www.wefixcode.com",
+                    "wefixcode-irdub.azurewebsites.net",
+                    "wefixcode-irdub.scm.azurewebsites.net"
+                ],
+                "hostNameSslStates": [
+                    {
+                        "name": "wefixcode.com",
+                        "sslState": 0,
+                        "thumbprint": null,
+                        "ipBasedSslState": 0
+                    },
+                    {
+                        "name": "[concat(parameters('sites_wefixcode_irdub_name'),'.azurewebsites.net')]",
+                        "sslState": 0,
+                        "thumbprint": null,
+                        "ipBasedSslState": 0
+                    },
+                    {
+                        "name": "[concat(parameters('sites_wefixcode_irdub_name'),'.scm.azurewebsites.net')]",
+                        "sslState": 0,
+                        "thumbprint": null,
+                        "ipBasedSslState": 0
+                    },
+                    {
+                        "name": "www.wefixcode.com",
+                        "sslState": 0,
+                        "thumbprint": null,
+                        "ipBasedSslState": 0
+                    }
+                ],
+                "serverFarmId": "[parameters('sites_wefixcode_irdub_serverFarmId')]"
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Sql/servers/wefixcode/databases/auth'.",
+            "type": "Microsoft.Sql/servers/databases",
+            "kind": "v12.0,user",
+            "name": "[parameters('databases_auth_name')]",
+            "apiVersion": "2014-04-01-preview",
+            "location": "North Europe",
+            "scale": null,
+            "properties": {
+                "databaseId": "d179f403-8892-48e2-938b-d35ec1ae2ccc",
+                "edition": "Basic",
+                "status": "Online",
+                "serviceLevelObjective": "Basic",
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": "2147483648",
+                "creationDate": "2017-05-21T17:37:03.9Z",
+                "currentServiceObjectiveId": "dd6d99bb-f193-4ec1-86f2-43d3bccbc49c",
+                "requestedServiceObjectiveId": "dd6d99bb-f193-4ec1-86f2-43d3bccbc49c",
+                "requestedServiceObjectiveName": "Basic",
+                "sampleName": null,
+                "defaultSecondaryLocation": "West Europe",
+                "earliestRestoreDate": "2017-06-25T00:00:00Z",
+                "elasticPoolName": null,
+                "containmentState": 2,
+                "readScale": "Disabled",
+                "failoverGroupId": null
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_wefixcode_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Sql/servers/wefixcode/databases/master'.",
+            "type": "Microsoft.Sql/servers/databases",
+            "kind": "v12.0,system",
+            "name": "[parameters('databases_master_name')]",
+            "apiVersion": "2014-04-01-preview",
+            "location": "North Europe",
+            "scale": null,
+            "properties": {
+                "databaseId": "87f54573-0b21-4204-b599-378cbff27ed8",
+                "edition": "Basic",
+                "status": "Online",
+                "serviceLevelObjective": "Basic",
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": "2147483648",
+                "creationDate": "2017-05-21T17:33:56.61Z",
+                "currentServiceObjectiveId": "dd6d99bb-f193-4ec1-86f2-43d3bccbc49c",
+                "requestedServiceObjectiveId": "dd6d99bb-f193-4ec1-86f2-43d3bccbc49c",
+                "requestedServiceObjectiveName": "Basic",
+                "sampleName": null,
+                "defaultSecondaryLocation": "West Europe",
+                "earliestRestoreDate": null,
+                "elasticPoolName": null,
+                "containmentState": 2,
+                "readScale": "Disabled",
+                "failoverGroupId": null
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_wefixcode_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Sql/servers/wefixcode/firewallRules/AllowAllWindowsAzureIps'.",
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "kind": "v12.0",
+            "name": "[parameters('firewallRules_AllowAllWindowsAzureIps_name')]",
+            "apiVersion": "2014-04-01-preview",
+            "location": "North Europe",
+            "scale": null,
+            "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('servers_wefixcode_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourceGroups/wefixcode-resources/providers/Microsoft.Web/sites/wefixcode-irdub/config/web'.",
+            "type": "Microsoft.Web/sites/config",
+            "name": "[parameters('config_web_name')]",
+            "apiVersion": "2015-08-01",
+            "location": "North Europe",
+            "tags": {
+                "hidden-related:/subscriptions/1fff5202-4755-4ab9-9222-1d8fec9a3e04/resourcegroups/default-service-plan/providers/Microsoft.Web/serverfarms/default-service-plan-irdub": "empty"
+            },
+            "scale": null,
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "phpVersion": "",
+                "pythonVersion": "",
+                "nodeVersion": "",
+                "linuxFxVersion": "",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2012",
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$wefixcode-irdub",
+                "publishingPassword": null,
+                "appSettings": null,
+                "metadata": null,
+                "connectionStrings": null,
+                "machineKey": null,
+                "handlerMappings": null,
+                "documentRoot": null,
+                "scmType": "VSTSRM",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "javaVersion": null,
+                "javaContainer": null,
+                "javaContainerVersion": null,
+                "appCommandLine": "",
+                "managedPipelineMode": 0,
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true,
+                        "virtualDirectories": null
+                    }
+                ],
+                "winAuthAdminState": 0,
+                "winAuthTenantState": 0,
+                "customAppPoolIdentityAdminState": false,
+                "customAppPoolIdentityTenantState": false,
+                "runtimeADUser": null,
+                "runtimeADUserPassword": null,
+                "loadBalancing": 1,
+                "routingRules": [],
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "limits": null,
+                "autoHealEnabled": false,
+                "autoHealRules": {
+                    "triggers": null,
+                    "actions": null
+                },
+                "tracingOptions": null,
+                "vnetName": "",
+                "siteAuthEnabled": false,
+                "siteAuthSettings": {
+                    "enabled": null,
+                    "unauthenticatedClientAction": null,
+                    "tokenStoreEnabled": null,
+                    "allowedExternalRedirectUrls": null,
+                    "defaultProvider": null,
+                    "clientId": null,
+                    "clientSecret": null,
+                    "issuer": null,
+                    "allowedAudiences": null,
+                    "additionalLoginParams": null,
+                    "isAadAutoProvisioned": false,
+                    "googleClientId": null,
+                    "googleClientSecret": null,
+                    "googleOAuthScopes": null,
+                    "facebookAppId": null,
+                    "facebookAppSecret": null,
+                    "facebookOAuthScopes": null,
+                    "twitterConsumerKey": null,
+                    "twitterConsumerSecret": null,
+                    "microsoftAccountClientId": null,
+                    "microsoftAccountClientSecret": null,
+                    "microsoftAccountOAuthScopes": null
+                },
+                "cors": null,
+                "push": null,
+                "apiDefinition": null,
+                "autoSwapSlotName": null,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": null
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_wefixcode_irdub_name'))]"
+            ]
+        }
+    ]
+}
