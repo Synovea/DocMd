@@ -304,7 +304,7 @@ namespace DocMd.WebJob
                     {
                         Title = (titleMatch.Success) ? titleMatch.Value : "No title found",
                         Excerpt = (excerptMatch.Success) ? System.Text.RegularExpressions.Regex.Replace(excerptMatch.Value, "<[^>]*>", "") : "No excerpt found",
-                        Path = htmlFile.Replace(basePath, "\\"),
+                        Path = htmlFile.Replace(basePath, ""),
                         ChangedDateTime = new FileInfo(htmlFile).LastWriteTimeUtc,
                         Type = "text/html"
                     });
@@ -355,9 +355,9 @@ namespace DocMd.WebJob
 
                 var searchServiceClient = CreateSearchServiceClient();
 
-                CreateIndex(searchServiceClient);
+                CreateIndex(searchServiceClient, ConfigurationManager.AppSettings["searchIndexName"]);
 
-                ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient("documents");
+                ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient(ConfigurationManager.AppSettings["searchIndexName"]);
 
                 var document = indexClient.Documents.Get<Search.SearchDocument>(htmlFile);
 
@@ -404,9 +404,9 @@ namespace DocMd.WebJob
 
                 var searchServiceClient = CreateSearchServiceClient();
 
-                CreateIndex(searchServiceClient);
+                CreateIndex(searchServiceClient, ConfigurationManager.AppSettings["searchIndexName"]);
 
-                ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient("documents");
+                ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient(ConfigurationManager.AppSettings["searchIndexName"]);
 
                 var document = indexClient.Documents.Get<Search.SearchDocument>(htmlFile);
 

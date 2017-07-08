@@ -26,7 +26,7 @@ namespace DocMd.Site.Controllers
         {
             if (!System.IO.File.Exists(Path.Combine(_hostingEnvironment.ContentRootPath, "webhooks.json")))
             {
-                return RedirectToAction(nameof(SetupController.Index), nameof(SetupController));
+                return RedirectToAction(nameof(SetupController.Index), "Setup");
             }
 
             if (!string.IsNullOrWhiteSpace(_contentOptions.Redirect))
