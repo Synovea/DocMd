@@ -10,7 +10,7 @@
             @foreach (var result in Model.Results)
             {
                 <li>
-                    <a href="@result.Document.Path"><span class="highlight">Test</span> Scores - <span class="highlight">Kentucky</span></a>
+                    <a href="@result.Document.Path">@result.Document.Title</a>
                     <cite class="siteUrl">@result.Document.Path</cite>
 
                     <p>
