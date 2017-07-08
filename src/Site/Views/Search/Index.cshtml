@@ -1,0 +1,33 @@
+﻿@model Microsoft.Azure.Search.Models.DocumentSearchResult<DocMd.Shared.Search.SearchDocument>
+
+@{
+    ViewBag.Title = "Search";
+}
+
+<div class="row result-container">
+    <div class="col-md-8 result-area">
+        <ul class="list-unstyled">
+            @foreach (var result in Model.Results)
+            {
+                <li>
+                    <a href="@result.Document.Path"><span class="highlight">Test</span> Scores - <span class="highlight">Kentucky</span></a>
+                    <cite class="siteUrl">@result.Document.Path</cite>
+
+                    <p>
+                        @if (result.Highlights != null)
+                        {
+                            @foreach (var highlight in result.Highlights)
+                            {
+                                @Html.Raw(highlight.Value)
+                            }
+                        }
+                        else
+                        {
+                            @Html.Raw(result.Document.Excerpt)
+                        }
+                    </p>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

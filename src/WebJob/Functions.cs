@@ -124,17 +124,12 @@ namespace DocMd.WebJob
                     change.RepoName = mergeSet.RepoName;
                     change.RepoPath = mergeSet.RepoPath;
 
-                    var history = repo.Commits.QueryBy(change.Path);
-
-                    foreach (var entry in history)
+                    change.Revisions.Add(new Revision()
                     {
-                        change.Revisions.Add(new Revision()
-                        {
-                            Sha = entry.Commit.Sha,
-                            Author = entry.Commit.Author.Name,
-                            LastRevisionDate = entry.Commit.Author.When
-                        });
-                    }
+                        Sha = mergeSet.Sha,
+                        Author = mergeSet.Author,
+                        LastRevisionDate = mergeSet.LastRevisionDate
+                    });
 
                     if (change.Path.Replace(repoPath, "").ToLower().StartsWith("\\.git"))
                     {
@@ -217,11 +212,19 @@ namespace DocMd.WebJob
                 {
                     if (change.Status.Equals(ChangeKind.Deleted))
                     {
-                        await LogAsync($"Removing file '{change.Path}'", sessionId, log);
+                        var repoPath = change.RepoPath;
 
-                        File.Delete(change.Path);
+                        var outputBasePath = new DirectoryInfo(ConfigurationManager.AppSettings["HtmlPath"]).FullName;
+                        var htmlPath = Path.Combine(outputBasePath, change.RepoName);
 
-                        await Helpers.QueueHelper.SendQueueMessage("search-indexes-remove", change.Path);
+                        var file = change.Path.Replace(repoPath, htmlPath).Replace(".md", ".html");
+
+                        await LogAsync($"Removing file '{file}'", sessionId, log);
+
+                        File.Delete(file);
+                        File.Delete($"{file}.meta");
+
+                        await Helpers.QueueHelper.SendQueueMessage("search-indexes-remove", file);
                     }
                 }
                 catch (Exception error)
@@ -348,6 +351,7 @@ namespace DocMd.WebJob
         {
             var sessionId = Guid.NewGuid();
             var htmlFile = change.Path;
+            var url = htmlFile.Replace(ConfigurationManager.AppSettings["HtmlPath"], "").Replace("\\", "/");
 
             try
             {
@@ -359,7 +363,10 @@ namespace DocMd.WebJob
 
                 ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient(ConfigurationManager.AppSettings["searchIndexName"]);
 
-                var document = indexClient.Documents.Get<Search.SearchDocument>(htmlFile);
+                Shared.Search.SearchDocument document = new Shared.Search.SearchDocument()
+                {
+                    DocumentId = url.GetHashString()
+                };
 
                 var titleRegexPattern = "(?s)(?<=<h1.+>)(.+?)(?=</h1>)";
                 var excerptRegexPattern = "(?s)(?<=<p>)(.+?)(?=</p>)";
@@ -369,22 +376,15 @@ namespace DocMd.WebJob
                 var titleMatch = System.Text.RegularExpressions.Regex.Match(content, titleRegexPattern);
                 var excerptMatch = System.Text.RegularExpressions.Regex.Match(content, excerptRegexPattern);
 
-                if (document == null)
-                {
-                    document = new Search.SearchDocument()
-                    {
-                        DocumentId = change.Path
-                    };
-                }
-
                 document.Title = (titleMatch.Success) ? titleMatch.Value : "No title found";
                 document.Excerpt = (excerptMatch.Success) ? System.Text.RegularExpressions.Regex.Replace(excerptMatch.Value, "<[^>]*>", "") : "No excerpt found";
                 document.Body = content;
+                document.Path = url;
                 document.Author = change.Author;
                 document.LastRevisionDate = change.LastRevisionDate;
                 document.Sha = change.Sha;
 
-                UploadDocuments(indexClient, new List<Search.SearchDocument>() {
+                UploadDocuments(indexClient, new List<Shared.Search.SearchDocument>() {
                     document
                 });
             }
@@ -397,6 +397,7 @@ namespace DocMd.WebJob
         public static async Task ProcessSearchRemoveMessageAsync([QueueTrigger("search-indexes-remove")] string htmlFile, TextWriter log)
         {
             var sessionId = Guid.NewGuid();
+            var url = htmlFile.Replace(ConfigurationManager.AppSettings["HtmlPath"], "").Replace("\\", "/");
 
             try
             {
@@ -408,12 +409,12 @@ namespace DocMd.WebJob
 
                 ISearchIndexClient indexClient = searchServiceClient.Indexes.GetClient(ConfigurationManager.AppSettings["searchIndexName"]);
 
-                var document = indexClient.Documents.Get<Search.SearchDocument>(htmlFile);
+                var searchResults = indexClient.Documents.Search<Shared.Search.SearchDocument>(url.GetHashString());
 
-                if (document != null)
+                if (searchResults.Results.Select(m => m.Document).Count(m => m.DocumentId.Equals(url.GetHashString())) == 1)
                 {
-                    UploadDocuments(indexClient, new List<Search.SearchDocument>() {
-                        document
+                    RemoveDocuments(indexClient, new List<Shared.Search.SearchDocument>() {
+                        searchResults.Results.Select(m => m.Document).Where(m => m.DocumentId.Equals(url.GetHashString())).First()
                     });
                 }
             }
@@ -472,14 +473,14 @@ namespace DocMd.WebJob
                 var definition = new Microsoft.Azure.Search.Models.Index()
                 {
                     Name = indexName,
-                    Fields = FieldBuilder.BuildForType<Search.SearchDocument>()
+                    Fields = FieldBuilder.BuildForType<Shared.Search.SearchDocument>()
                 };
 
                 serviceClient.Indexes.Create(definition);
             }
         }
 
-        private static void UploadDocuments(ISearchIndexClient indexClient, List<Search.SearchDocument> documents)
+        private static void UploadDocuments(ISearchIndexClient indexClient, List<Shared.Search.SearchDocument> documents)
         {
             var batch = IndexBatch.Upload(documents.ToArray());
 
@@ -495,7 +496,7 @@ namespace DocMd.WebJob
             }
         }
 
-        private static void RemoveDocuments(ISearchIndexClient indexClient, List<Search.SearchDocument> documents)
+        private static void RemoveDocuments(ISearchIndexClient indexClient, List<Shared.Search.SearchDocument> documents)
         {
             var batch = IndexBatch.Delete(documents.ToArray());
 

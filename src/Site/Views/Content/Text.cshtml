@@ -5,11 +5,34 @@
     Layout = ViewBag.Layout;
 }
 
-@if (ViewBag.MimeType.Equals("text/html"))
+@if (ViewBag.TableOfContents == null)
 {
-    @Html.Raw(System.IO.File.ReadAllText(Model.FullName));
+    @if (ViewBag.MimeType.Equals("text/html"))
+    {
+        @Html.Raw(System.IO.File.ReadAllText(Model.FullName));
+    }
+    else
+    {
+        System.IO.File.ReadAllText(Model.FullName);
+    }
 }
 else
 {
-    System.IO.File.ReadAllText(Model.FullName);
+    <div class="main">
+        <div class="section">
+            <div class="container">
+                <div class="row">
+                    @foreach (var toc in ViewBag.TableOfContents)
+                    {
+                        <div class="media">
+                            <div class="media-body">
+                                <h4 class="media-heading"><a href="@toc.Path">@toc.Title</a> <small>@toc.ChangedDateTime.ToString("dd MMMM yyyy hh:mm")</small></h4>
+                                @toc.Excerpt
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 }

@@ -52,6 +52,7 @@ namespace DocMd.Site
 
             services.Configure<ContentOptions>(Configuration.GetSection("Content"));
             services.Configure<VersionOptions>(Configuration.GetSection("Version"));
+            services.Configure<SearchOptions>(Configuration.GetSection("Search"));
 
             // TODO: Only used by the queue helper, need to change required options into a class as above and remove this line.
             services.AddSingleton<IConfiguration>(Configuration);

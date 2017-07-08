@@ -1,13 +1,9 @@
 ﻿using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DocMd.WebJob.Search
+namespace DocMd.Shared.Search
 {
     [SerializePropertyNamesAsCamelCase]
     public class SearchDocument
@@ -15,6 +11,8 @@ namespace DocMd.WebJob.Search
         [Key]
         [IsFilterable]
         public string DocumentId { get; set; }
+
+        public string Path { get; set; }
 
         [IsSearchable]
         public string Title { get; set; }

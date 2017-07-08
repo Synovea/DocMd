@@ -22,7 +22,7 @@ namespace DocMd.WebJob
             var commitLink = ConfigurationManager.AppSettings["CommitLink"];
 
             Console.WriteLine($"Sha\t\t{sha}");
-            Console.WriteLine($"Date Time\t\t{commitDateTime}");
+            Console.WriteLine($"Date Time\t{commitDateTime}");
             Console.WriteLine($"Link\t\t{commitLink}");
 
             var config = new JobHostConfiguration();

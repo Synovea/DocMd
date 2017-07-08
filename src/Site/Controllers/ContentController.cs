@@ -34,19 +34,37 @@ namespace DocMd.Site.Controllers
                 return RedirectToAction(nameof(Render), new { path = _contentOptions.Redirect });
             }
 
-            var basePath = Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.HtmlPath);
-            var baseDirectory = new System.IO.DirectoryInfo(basePath);
+            if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
+                System.IO.File.Exists(Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.Layout)))
+            {
+                ViewBag.Layout = _contentOptions.Layout;
+            }
+            else
+            {
+                ViewBag.Layout = "~/Views/Shared/_Layout.cshtml";
+            }
 
-            var directories = System.IO.Directory.GetDirectories(basePath, "*", System.IO.SearchOption.TopDirectoryOnly);
+            return View(GetTableOfContents(Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.HtmlPath)));
+        }
 
-            var tableOfContents = new Dictionary<string, List<Shared.Content.Node>>();
+        private Dictionary<string, List<Shared.Content.Node>> GetTableOfContents(string basePath, bool includeAllDirectories = true)
+        {
+            Dictionary<string, List<Shared.Content.Node>> tableOfContents = new Dictionary<string, List<Shared.Content.Node>>();
+
+            var directories = Directory.GetDirectories(basePath, "*", SearchOption.TopDirectoryOnly);
+
             foreach (var directory in directories)
             {
-                if (System.IO.File.Exists(System.IO.Path.Combine(directory, "toc.generated.json")))
+                if (!includeAllDirectories && !directory.ToLower().Equals(basePath))
                 {
-                    var toc = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Shared.Content.Node>>(System.IO.File.ReadAllText(System.IO.Path.Combine(directory, "toc.generated.json")));
+                    continue;
+                }
 
-                    tableOfContents.Add(new System.IO.DirectoryInfo(directory).Name, toc
+                if (System.IO.File.Exists(Path.Combine(directory, "toc.generated.json")))
+                {
+                    var toc = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Shared.Content.Node>>(System.IO.File.ReadAllText(Path.Combine(directory, "toc.generated.json")));
+
+                    tableOfContents.Add(new DirectoryInfo(directory).Name, toc
                         .Flatten(m => m.Children)
                         .Where(m => m.Type.Equals("text/html"))
                         .Where(m => !string.IsNullOrWhiteSpace(m.Path))
@@ -60,44 +78,39 @@ namespace DocMd.Site.Controllers
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
-                System.IO.File.Exists(Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.Layout)))
-            {
-                ViewBag.Layout = _contentOptions.Layout;
-            }
-            else
-            {
-                ViewBag.Layout = "~/Views/Shared/_Layout.cshtml";
-            }
-
-            return View(tableOfContents);
+            return tableOfContents;
         }
 
         public ActionResult Render(string path, bool currentToC = false)
         {
             var basePath = Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.HtmlPath);
-            var baseDirectory = new System.IO.DirectoryInfo(basePath);
+            var baseDirectory = new DirectoryInfo(basePath);
 
-            var directories = System.IO.Directory.GetDirectories(basePath);
+            var directories = Directory.GetDirectories(basePath);
             var directoryCount = directories.Count();
 
             var contentPath = path;
 
-            if (directoryCount == 1 && !System.IO.File.Exists(System.IO.Path.Combine(basePath, $"{contentPath}")))
+            if (directoryCount == 1 && !System.IO.File.Exists(Path.Combine(basePath, contentPath)))
             {
-                contentPath = System.IO.Path.Combine(directories.First(), contentPath);
+                contentPath = Path.Combine(directories.First(), contentPath);
             }
 
-            contentPath = System.IO.Path.Combine(basePath, $"{contentPath}");
-            var fileInfo = new System.IO.FileInfo(contentPath);
+            contentPath = Path.Combine(basePath, contentPath);
+            var fileInfo = new FileInfo(contentPath);
 
             if (!fileInfo.Exists)
             {
-                fileInfo = new System.IO.FileInfo(Path.Combine(_hostingEnvironment.ContentRootPath, path));
+                fileInfo = new FileInfo(Path.Combine(_hostingEnvironment.ContentRootPath, path));
+                var directoryInfo = new DirectoryInfo(Path.Combine(_hostingEnvironment.ContentRootPath, contentPath));
 
-                if (!fileInfo.Exists)
+                if (!fileInfo.Exists && !directoryInfo.Exists)
                 {
                     return NotFound();
+                }
+                else if (!fileInfo.Exists && directoryInfo.Exists)
+                {
+                    ViewBag.TableOfContents = GetTableOfContents(Path.Combine(_hostingEnvironment.ContentRootPath, contentPath));
                 }
                 else
                 {
@@ -120,12 +133,12 @@ namespace DocMd.Site.Controllers
             return GetContent(basePath, fileInfo, currentToC);
         }
 
-        private ActionResult CheckAccessRules(string basePath, System.IO.DirectoryInfo baseDirectory, string contentPath, System.IO.FileInfo fileInfo)
+        private ActionResult CheckAccessRules(string basePath, DirectoryInfo baseDirectory, string contentPath, FileInfo fileInfo)
         {
-            var securityFile = new System.IO.FileInfo(System.IO.Path.Combine(basePath, $"{contentPath}.security"));
+            var securityFile = new FileInfo(Path.Combine(basePath, $"{contentPath}.security"));
 
             var parentDirectory = fileInfo.Directory;
-            var securityFiles = new List<System.IO.FileInfo>();
+            var securityFiles = new List<FileInfo>();
 
             if (securityFile.Exists)
             {
@@ -136,7 +149,7 @@ namespace DocMd.Site.Controllers
             {
                 if (parentDirectory.GetFiles(".security").Count() > 0)
                 {
-                    securityFiles.Add(new System.IO.FileInfo($"{System.IO.Path.Combine(parentDirectory.FullName, ".security")}"));
+                    securityFiles.Add(new FileInfo($"{Path.Combine(parentDirectory.FullName, ".security")}"));
                 }
 
                 parentDirectory = parentDirectory.Parent;
@@ -186,9 +199,9 @@ namespace DocMd.Site.Controllers
             return null;
         }
 
-        private ActionResult GetContent(string basePath, System.IO.FileInfo fileInfo, bool currentToC)
+        private ActionResult GetContent(string basePath, FileInfo fileInfo, bool currentToC)
         {
-            var baseDirectory = new System.IO.DirectoryInfo(basePath);
+            var baseDirectory = new DirectoryInfo(basePath);
 
             var contentType = "application/octet-stream";
             new FileExtensionContentTypeProvider().TryGetContentType(fileInfo.FullName, out contentType);
@@ -207,7 +220,7 @@ namespace DocMd.Site.Controllers
                 {
                     if (parentDirectory.GetFiles("_Layout.cshtml").Count() > 0)
                     {
-                        layout = $"{System.IO.Path.Combine(parentDirectory.FullName, "_Layout.cshtml")}";
+                        layout = $"{Path.Combine(parentDirectory.FullName, "_Layout.cshtml")}";
                         break;
                     }
 
@@ -225,10 +238,10 @@ namespace DocMd.Site.Controllers
                 {
                     var repo = fileInfo.FullName.Replace(basePath, "").Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
-                    tocPath = System.IO.Path.Combine(basePath, repo);
+                    tocPath = Path.Combine(basePath, repo);
                 }
 
-                var tocFile = System.IO.Path.Combine(tocPath, "toc.generated.json");
+                var tocFile = Path.Combine(tocPath, "toc.generated.json");
 
                 if (System.IO.File.Exists(tocFile))
                 {

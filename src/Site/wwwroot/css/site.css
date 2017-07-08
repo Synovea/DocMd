@@ -48,3 +48,26 @@ textarea {
         display: none;
     }
 }
+
+/* Search styles */
+.container.result-container {
+    position: relative;
+    display: block;
+}
+
+.container .result-area .list-unstyled a {
+    font-size: initial;
+    line-height: inherit;
+    margin-bottom: 0;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+.container .result-area p {
+    color: #333;
+}
+
+.container .result-area cite {
+    display: block;
+    color: #093;
+}
