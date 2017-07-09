@@ -211,7 +211,9 @@ namespace DocMd.Site.Controllers
 
             if (viewType.Equals("text") && (!viewDocumentType.Equals("css")))
             {
-                ViewBag.MimeType = contentType;
+                var model = new Models.ContentViewModels.ContentViewModel();
+
+                model.ContentType = contentType;
 
                 var parentDirectory = fileInfo.Directory;
                 var layout = "~/Views/Shared/_Layout.cshtml";
@@ -247,7 +249,26 @@ namespace DocMd.Site.Controllers
                 {
                     var toc = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Shared.Content.Node>>(System.IO.File.ReadAllText(tocFile));
 
-                    ViewBag.ToC = toc;
+                    model.TableOfContents = toc;
+                }
+
+                model.Body = System.IO.File.ReadAllText(fileInfo.FullName);
+
+                var titleRegexPattern = "(?s)(?<=<h1.+>)(.+?)(?=</h1>)";
+                var titleMatch = System.Text.RegularExpressions.Regex.Match(model.Body, titleRegexPattern);
+
+                if (titleMatch.Success)
+                {
+                    model.Title = titleMatch.Value;
+                }
+                else
+                {
+                    model.Title = fileInfo.Name;
+                }
+
+                if (System.IO.File.Exists(fileInfo.FullName.ToLower().Replace(".html", ".header.html")))
+                {
+                    model.Header = System.IO.File.ReadAllText(fileInfo.FullName.ToLower().Replace(".html", ".header.html"));
                 }
 
                 return View(viewType, fileInfo);

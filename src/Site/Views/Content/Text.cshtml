@@ -1,19 +1,19 @@
-﻿@model System.IO.FileInfo
+﻿@model DocMd.Site.Models.ContentViewModels.ContentViewModel
 @{
-    ViewBag.Title = Model.Name;
+    ViewBag.Title = Model.Title;
 
     Layout = ViewBag.Layout;
 }
 
-@if (ViewBag.TableOfContents == null)
+@if (Model.TableOfContents == null)
 {
-    @if (ViewBag.MimeType.Equals("text/html"))
+    @if (Model.ContentType.Equals("text/html"))
     {
-        @Html.Raw(System.IO.File.ReadAllText(Model.FullName));
+        @Html.Raw(Model.Body);
     }
     else
     {
-        System.IO.File.ReadAllText(Model.FullName);
+        @Model.Body
     }
 }
 else
@@ -22,7 +22,7 @@ else
         <div class="section">
             <div class="container">
                 <div class="row">
-                    @foreach (var toc in ViewBag.TableOfContents)
+                    @foreach (var toc in Model.TableOfContents)
                     {
                         <div class="media">
                             <div class="media-body">
@@ -35,4 +35,8 @@ else
             </div>
         </div>
     </div>
+}
+
+@section header{
+    @Html.Raw(Model.Header);
 }

@@ -183,7 +183,10 @@ namespace DocMd.WebJob
                         File.WriteAllText(renderedFilename, renderedContent);
                         File.WriteAllText($"{renderedFilename}.meta", Newtonsoft.Json.JsonConvert.SerializeObject(change.Revisions));
 
-                        await Helpers.QueueHelper.SendQueueMessage("search-indexes", change);
+                        if (!file.ToLower().EndsWith(".header.md"))
+                        {
+                            await Helpers.QueueHelper.SendQueueMessage("search-indexes", change);
+                        }
                     }
                     else
                     {
