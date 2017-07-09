@@ -16,10 +16,6 @@ namespace Site.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public SecurityController()
-        {
-        }
-
         public SecurityController(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager)

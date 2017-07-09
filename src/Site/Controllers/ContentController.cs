@@ -254,7 +254,7 @@ namespace DocMd.Site.Controllers
             }
             else
             {
-                return File(fileInfo.FullName, contentType);
+                return File(fileInfo.OpenRead(), contentType, fileInfo.Name);
             }
         }
 
