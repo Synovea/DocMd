@@ -7,19 +7,27 @@ using Microsoft.AspNetCore.Identity;
 using DocMd.Site.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using DocMd.Site;
+using System.IO;
 
 namespace Site.Controllers
 {
     [Authorize]
     public class SecurityController : Controller
     {
+        private readonly ContentOptions _contentOptions;
+
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
         public SecurityController(
+            IOptions<ContentOptions> contentOptions,
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager)
         {
+            _contentOptions = contentOptions.Value;
+
             _userManager = userManager;
             _roleManager = roleManager;
         }
@@ -27,11 +35,31 @@ namespace Site.Controllers
         // GET: Security
         public ActionResult Index()
         {
+            if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
+                   System.IO.File.Exists(Path.Combine(_contentOptions.HtmlPath, _contentOptions.Layout)))
+            {
+                ViewBag.Layout = $"~/{_contentOptions.HtmlPath.Replace(_contentOptions.BasePath, "")}/{_contentOptions.Layout}".Replace("\\", "/");
+            }
+            else
+            {
+                ViewBag.Layout = "~/Views/Shared/_Layout.cshtml";
+            }
+
             return View();
         }
 
         public ActionResult Roles()
         {
+            if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
+                      System.IO.File.Exists(Path.Combine(_contentOptions.HtmlPath, _contentOptions.Layout)))
+            {
+                ViewBag.Layout = $"~/{_contentOptions.HtmlPath.Replace(_contentOptions.BasePath, "")}/{_contentOptions.Layout}".Replace("\\", "/");
+            }
+            else
+            {
+                ViewBag.Layout = "~/Views/Shared/_Layout.cshtml";
+            }
+
             var roles = _roleManager.Roles.ToList();
 
             return View(roles);
@@ -50,6 +78,16 @@ namespace Site.Controllers
 
         public ActionResult Role(string id)
         {
+            if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
+                      System.IO.File.Exists(Path.Combine(_contentOptions.HtmlPath, _contentOptions.Layout)))
+            {
+                ViewBag.Layout = $"~/{_contentOptions.HtmlPath.Replace(_contentOptions.BasePath, "")}/{_contentOptions.Layout}".Replace("\\", "/");
+            }
+            else
+            {
+                ViewBag.Layout = "~/Views/Shared/_Layout.cshtml";
+            }
+
             if (_roleManager.Roles.Where(m => m.Name.ToLower().Equals(id.ToLower())).Count() == 0)
             {
                 return NotFound();

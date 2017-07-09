@@ -27,9 +27,9 @@ namespace Site.Controllers
         public IActionResult Index(string query)
         {
             if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
-                System.IO.File.Exists(Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.Layout)))
+                System.IO.File.Exists(Path.Combine(_contentOptions.HtmlPath, _contentOptions.Layout)))
             {
-                ViewBag.Layout = _contentOptions.Layout;
+                ViewBag.Layout = $"~/{_contentOptions.HtmlPath.Replace(_contentOptions.BasePath, "")}/{_contentOptions.Layout}".Replace("\\", "/");
             }
             else
             {
