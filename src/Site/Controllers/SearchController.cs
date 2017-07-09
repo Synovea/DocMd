@@ -6,20 +6,36 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Search;
 using DocMd.Site;
 using Microsoft.Extensions.Options;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Site.Controllers
 {
     public class SearchController : Controller
     {
+        private readonly ContentOptions _contentOptions;
         private readonly SearchOptions _searchOptions;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public SearchController(IOptions<SearchOptions> searchOptions)
+        public SearchController(IOptions<ContentOptions> contentOptions, IOptions<SearchOptions> searchOptions, IHostingEnvironment hostingEnvironment)
         {
+            _contentOptions = contentOptions.Value;
             _searchOptions = searchOptions.Value;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public IActionResult Index(string query)
         {
+            if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
+                System.IO.File.Exists(Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.Layout)))
+            {
+                ViewBag.Layout = _contentOptions.Layout;
+            }
+            else
+            {
+                ViewBag.Layout = "~/Views/Shared/_Layout.cshtml";
+            }
+
             var searchServiceClient = CreateSearchServiceClient(_searchOptions);
 
             if (searchServiceClient.Indexes.Exists(_searchOptions.Index))
@@ -31,7 +47,7 @@ namespace Site.Controllers
                 return View(searchResults);
             }
 
-            return View();
+            return NotFound();
         }
 
         private static SearchServiceClient CreateSearchServiceClient(SearchOptions searchOptions)

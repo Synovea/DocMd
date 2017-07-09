@@ -216,7 +216,7 @@ namespace DocMd.Site.Controllers
                 var parentDirectory = fileInfo.Directory;
                 var layout = "~/Views/Shared/_Layout.cshtml";
 
-                while (!parentDirectory.FullName.ToLower().Equals(baseDirectory.FullName.ToLower()))
+                while (!parentDirectory.FullName.ToLower().Equals(baseDirectory.Parent.FullName.ToLower()))
                 {
                     if (parentDirectory.GetFiles("_Layout.cshtml").Count() > 0)
                     {

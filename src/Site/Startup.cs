@@ -74,7 +74,8 @@ namespace DocMd.Site
             }
             else
             {
-                app.UseExceptionHandler("/Content/Error");
+                app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler("/Content/Error");
             }
 
             app.UseStaticFiles();
