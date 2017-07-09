@@ -271,7 +271,7 @@ namespace DocMd.Site.Controllers
                     model.Header = System.IO.File.ReadAllText(fileInfo.FullName.ToLower().Replace(".html", ".header.html"));
                 }
 
-                return View(viewType, fileInfo);
+                return View(viewType, model);
             }
             else
             {
