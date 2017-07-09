@@ -67,6 +67,7 @@ namespace DocMd.Site.Controllers
                     tableOfContents.Add(new DirectoryInfo(directory).Name, toc
                         .Flatten(m => m.Children)
                         .Where(m => m.Type.Equals("text/html"))
+                        .Where(m => !m.Path.ToLower().EndsWith(".header.html"))
                         .Where(m => !string.IsNullOrWhiteSpace(m.Path))
                         .Select(m => new Shared.Content.Node()
                         {
@@ -243,7 +244,17 @@ namespace DocMd.Site.Controllers
                 {
                     var toc = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Shared.Content.Node>>(System.IO.File.ReadAllText(tocFile));
 
-                    model.CurrentTableOfContents = toc;
+                    model.CurrentTableOfContents = toc
+                        .Where(m => m.Type.Equals("text/html"))
+                        .Where(m => !m.Path.ToLower().EndsWith(".header.html"))
+                        .Where(m => !string.IsNullOrWhiteSpace(m.Path))
+                        .Select(m => new Shared.Content.Node()
+                        {
+                            Title = m.Title,
+                            Excerpt = m.GetExcerpt(300),
+                            ChangedDateTime = m.ChangedDateTime,
+                            Path = m.Path.Replace("\\", "/")
+                        }).ToList();
                 }
 
                 /* Table of Contents */
@@ -257,7 +268,17 @@ namespace DocMd.Site.Controllers
                 {
                     var toc = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Shared.Content.Node>>(System.IO.File.ReadAllText(tocFile));
 
-                    model.TableOfContents = toc;
+                    model.TableOfContents = toc
+                        .Where(m => m.Type.Equals("text/html"))
+                        .Where(m => !m.Path.ToLower().EndsWith(".header.html"))
+                        .Where(m => !string.IsNullOrWhiteSpace(m.Path))
+                        .Select(m => new Shared.Content.Node()
+                        {
+                            Title = m.Title,
+                            Excerpt = m.GetExcerpt(300),
+                            ChangedDateTime = m.ChangedDateTime,
+                            Path = m.Path.Replace("\\", "/")
+                        }).ToList();
                 }
 
                 model.Body = System.IO.File.ReadAllText(fileInfo.FullName);
