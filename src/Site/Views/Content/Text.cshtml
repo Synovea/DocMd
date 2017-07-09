@@ -5,7 +5,7 @@
     Layout = ViewBag.Layout;
 }
 
-@if (Model.TableOfContents == null)
+@if (!string.IsNullOrWhiteSpace(Model.Body))
 {
     @if (Model.ContentType.Equals("text/html"))
     {
@@ -22,7 +22,7 @@ else
         <div class="section">
             <div class="container">
                 <div class="row">
-                    @foreach (var toc in Model.TableOfContents)
+                    @foreach (var toc in Model.CurrentTableOfContents)
                     {
                         <div class="media">
                             <div class="media-body">
@@ -38,5 +38,5 @@ else
 }
 
 @section header{
-    @Html.Raw(Model.Header);
+    @Html.Raw(Model.Header)
 }

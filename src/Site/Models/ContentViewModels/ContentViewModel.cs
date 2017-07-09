@@ -14,5 +14,7 @@ namespace DocMd.Site.Models.ContentViewModels
         public string ContentType { get; set; }
 
         public List<Shared.Content.Node> TableOfContents { get; set; }
+
+        public List<Shared.Content.Node> CurrentTableOfContents { get; set; }
     }
 }

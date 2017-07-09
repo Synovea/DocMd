@@ -81,7 +81,7 @@ namespace DocMd.Site.Controllers
             return tableOfContents;
         }
 
-        public ActionResult Render(string path, bool currentToC = false)
+        public ActionResult Render(string path)
         {
             var basePath = Path.Combine(_hostingEnvironment.ContentRootPath, _contentOptions.HtmlPath);
             var baseDirectory = new DirectoryInfo(basePath);
@@ -130,7 +130,7 @@ namespace DocMd.Site.Controllers
 
             ViewBag.Path = $"\\{path.ToLower().Replace("/", "\\")}";
 
-            return GetContent(basePath, fileInfo, currentToC);
+            return GetContent(basePath, fileInfo);
         }
 
         private ActionResult CheckAccessRules(string basePath, DirectoryInfo baseDirectory, string contentPath, FileInfo fileInfo)
@@ -199,7 +199,7 @@ namespace DocMd.Site.Controllers
             return null;
         }
 
-        private ActionResult GetContent(string basePath, FileInfo fileInfo, bool currentToC)
+        private ActionResult GetContent(string basePath, FileInfo fileInfo)
         {
             var baseDirectory = new DirectoryInfo(basePath);
 
@@ -236,14 +236,22 @@ namespace DocMd.Site.Controllers
 
                 var tocPath = fileInfo.Directory.FullName;
 
-                if (!currentToC)
-                {
-                    var repo = fileInfo.FullName.Replace(basePath, "").Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                /* Current Table of Contents */
+                var tocFile = Path.Combine(tocPath, "toc.generated.json");
 
-                    tocPath = Path.Combine(basePath, repo);
+                if (System.IO.File.Exists(tocFile))
+                {
+                    var toc = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Shared.Content.Node>>(System.IO.File.ReadAllText(tocFile));
+
+                    model.CurrentTableOfContents = toc;
                 }
 
-                var tocFile = Path.Combine(tocPath, "toc.generated.json");
+                /* Table of Contents */
+                var repo = fileInfo.FullName.Replace(basePath, "").Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries)[0];
+
+                tocPath = Path.Combine(basePath, repo);
+
+                tocFile = Path.Combine(tocPath, "toc.generated.json");
 
                 if (System.IO.File.Exists(tocFile))
                 {
