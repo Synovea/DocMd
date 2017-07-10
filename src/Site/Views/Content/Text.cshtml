@@ -1,15 +1,62 @@
-﻿@model System.IO.FileInfo
+﻿@model DocMd.Site.Models.ContentViewModels.ContentViewModel
 @{
-    ViewBag.Title = Model.Name;
+    ViewBag.Title = Model.Title;
 
     Layout = ViewBag.Layout;
 }
 
-@if (ViewBag.MimeType.Equals("text/html"))
+@if (!string.IsNullOrWhiteSpace(Model.Body))
 {
-    @Html.Raw(System.IO.File.ReadAllText(Model.FullName));
+    @if (Model.ContentType.Equals("text/html"))
+    {
+        @Html.Raw(Model.Body);
+    }
+    else
+    {
+        @Model.Body
+    }
 }
 else
 {
-    System.IO.File.ReadAllText(Model.FullName);
+    var tableOfContents = Model.CurrentTableOfContents;
+
+    if (tableOfContents != null)
+    {
+        <div class="main">
+            <div class="section">
+                <div class="row">
+                    <div class="col-md-12">
+                        @foreach (var toc in tableOfContents)
+                        {
+                            <div class="media">
+                                <div class="media-body">
+                                    <h4 class="media-heading"><a href="@toc.Path">@toc.Title</a> <small>@toc.ChangedDateTime.ToString("dd MMMM yyyy hh:mm")</small></h4>
+                                    @toc.Excerpt
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="main">
+            <div class="section">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>No content found.</h3>
+                            <p>This could be because you typed an incorrect url or the content was removed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section header{
+    @Html.Raw(Model.Header)
 }

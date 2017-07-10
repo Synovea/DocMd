@@ -51,6 +51,11 @@ namespace DocMd.Site
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
             services.Configure<ContentOptions>(Configuration.GetSection("Content"));
+            services.Configure<VersionOptions>(Configuration.GetSection("Version"));
+            services.Configure<SearchOptions>(Configuration.GetSection("Search"));
+
+            // TODO: Only used by the queue helper, need to change required options into a class as above and remove this line.
+            services.AddSingleton<IConfiguration>(Configuration);
 
             services.AddSingleton<Shared.Helpers.QueueHelper, Shared.Helpers.QueueHelper>();
         }
@@ -69,7 +74,8 @@ namespace DocMd.Site
             }
             else
             {
-                app.UseExceptionHandler("/Content/Error");
+                app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler("/Content/Error");
             }
 
             app.UseStaticFiles();
@@ -83,6 +89,11 @@ namespace DocMd.Site
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Content}/{action=Index}/{id?}");
+
+                routes.MapRoute(
+                    name: "render",
+                    template: "{*path}",
+                    defaults: new { Controller = "Content", Action = "Render" });
             });
         }
     }

@@ -7,6 +7,7 @@ namespace DocMd.Site
 {
     public class ContentOptions
     {
+        public string BasePath { get; set; } = "/";
         public string HtmlPath { get; set; } = "/html";
         public string RepositoryPath { get; set; } = "/repo";
 
