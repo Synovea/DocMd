@@ -103,7 +103,7 @@ namespace DocMd.Site.Controllers
             if (!fileInfo.Exists)
             {
                 fileInfo = new FileInfo(Path.Combine(_hostingEnvironment.ContentRootPath, path));
-                var directoryInfo = new DirectoryInfo(Path.Combine(_hostingEnvironment.ContentRootPath, contentPath));
+                var directoryInfo = new DirectoryInfo(Path.Combine(basePath, path));
 
                 if (!fileInfo.Exists && !directoryInfo.Exists)
                 {
@@ -111,7 +111,8 @@ namespace DocMd.Site.Controllers
                 }
                 else if (!fileInfo.Exists && directoryInfo.Exists)
                 {
-                    ViewBag.TableOfContents = GetTableOfContents(Path.Combine(_hostingEnvironment.ContentRootPath, contentPath));
+                    ViewBag.TableOfContents = GetTableOfContents(directoryInfo.FullName);
+                    contentPath = directoryInfo.FullName;
                 }
                 else
                 {
@@ -122,7 +123,14 @@ namespace DocMd.Site.Controllers
                 }
             }
 
-            var securityCheck = CheckAccessRules(basePath, baseDirectory, contentPath, fileInfo);
+            var accessRuleDirectory = fileInfo.Directory;
+
+            if (!accessRuleDirectory.Exists)
+            {
+                accessRuleDirectory = new DirectoryInfo(Path.Combine(basePath, path));
+            }
+
+            var securityCheck = CheckAccessRules(basePath, baseDirectory, contentPath, accessRuleDirectory);
 
             if (securityCheck != null)
             {
@@ -131,14 +139,14 @@ namespace DocMd.Site.Controllers
 
             ViewBag.Path = $"\\{path.ToLower().Replace("/", "\\")}";
 
-            return GetContent(basePath, fileInfo);
+            return GetContent(basePath, (fileInfo.Exists) ? fileInfo.FullName : accessRuleDirectory.FullName);
         }
 
-        private ActionResult CheckAccessRules(string basePath, DirectoryInfo baseDirectory, string contentPath, FileInfo fileInfo)
+        private ActionResult CheckAccessRules(string basePath, DirectoryInfo baseDirectory, string contentPath, DirectoryInfo directory)
         {
             var securityFile = new FileInfo(Path.Combine(basePath, $"{contentPath}.security"));
 
-            var parentDirectory = fileInfo.Directory;
+            var parentDirectory = directory;
             var securityFiles = new List<FileInfo>();
 
             if (securityFile.Exists)
@@ -200,12 +208,20 @@ namespace DocMd.Site.Controllers
             return null;
         }
 
-        private ActionResult GetContent(string basePath, FileInfo fileInfo)
+        private ActionResult GetContent(string basePath, string fullPath)
         {
             var baseDirectory = new DirectoryInfo(basePath);
 
+            var fileInfo = new FileInfo(fullPath);
+            var directoryInfo = new DirectoryInfo(fullPath);
+
             var contentType = "application/octet-stream";
-            new FileExtensionContentTypeProvider().TryGetContentType(fileInfo.FullName, out contentType);
+            new FileExtensionContentTypeProvider().TryGetContentType(fullPath, out contentType);
+
+            if (string.IsNullOrWhiteSpace(contentType) && !fileInfo.Exists && directoryInfo.Exists)
+            {
+                contentType = "text/directory";
+            }
 
             var viewType = contentType.Split('/')[0];
             var viewDocumentType = contentType.Split('/')[1];
@@ -216,7 +232,7 @@ namespace DocMd.Site.Controllers
 
                 model.ContentType = contentType;
 
-                var parentDirectory = fileInfo.Directory;
+                var parentDirectory = (fileInfo.Exists) ? fileInfo.Directory : directoryInfo;
                 var layout = "~/Views/Shared/_Layout.cshtml";
 
                 while (!parentDirectory.FullName.ToLower().Equals(baseDirectory.Parent.FullName.ToLower()))
@@ -235,7 +251,7 @@ namespace DocMd.Site.Controllers
                 else
                     ViewBag.Layout = layout;
 
-                var tocPath = fileInfo.Directory.FullName;
+                var tocPath = (fileInfo.Exists) ? fileInfo.Directory.FullName : directoryInfo.FullName;
 
                 /* Current Table of Contents */
                 var tocFile = Path.Combine(tocPath, "toc.generated.json");
@@ -245,6 +261,7 @@ namespace DocMd.Site.Controllers
                     var toc = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Shared.Content.Node>>(System.IO.File.ReadAllText(tocFile));
 
                     model.CurrentTableOfContents = toc
+                        .Flatten(m => m.Children)
                         .Where(m => m.Type.Equals("text/html"))
                         .Where(m => !m.Path.ToLower().EndsWith(".header.html"))
                         .Where(m => !string.IsNullOrWhiteSpace(m.Path))
@@ -258,7 +275,7 @@ namespace DocMd.Site.Controllers
                 }
 
                 /* Table of Contents */
-                var repo = fileInfo.FullName.Replace(basePath, "").Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                var repo = ((fileInfo.Exists) ? fileInfo.FullName : directoryInfo.FullName).Replace(basePath, "").Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
                 tocPath = Path.Combine(basePath, repo);
 
@@ -281,23 +298,30 @@ namespace DocMd.Site.Controllers
                         }).ToList();
                 }
 
-                model.Body = System.IO.File.ReadAllText(fileInfo.FullName);
-
-                var titleRegexPattern = "(?s)(?<=<h1.+>)(.+?)(?=</h1>)";
-                var titleMatch = System.Text.RegularExpressions.Regex.Match(model.Body, titleRegexPattern);
-
-                if (titleMatch.Success)
+                if (fileInfo.Exists)
                 {
-                    model.Title = titleMatch.Value;
+                    model.Body = System.IO.File.ReadAllText(fileInfo.FullName);
+
+                    var titleRegexPattern = "(?s)(?<=<h1.+>)(.+?)(?=</h1>)";
+                    var titleMatch = System.Text.RegularExpressions.Regex.Match(model.Body, titleRegexPattern);
+
+                    if (titleMatch.Success)
+                    {
+                        model.Title = titleMatch.Value;
+                    }
+                    else
+                    {
+                        model.Title = fileInfo.Name;
+                    }
+
+                    if (System.IO.File.Exists(fileInfo.FullName.ToLower().Replace(".html", ".header.html")))
+                    {
+                        model.Header = System.IO.File.ReadAllText(fileInfo.FullName.ToLower().Replace(".html", ".header.html"));
+                    }
                 }
                 else
                 {
-                    model.Title = fileInfo.Name;
-                }
-
-                if (System.IO.File.Exists(fileInfo.FullName.ToLower().Replace(".html", ".header.html")))
-                {
-                    model.Header = System.IO.File.ReadAllText(fileInfo.FullName.ToLower().Replace(".html", ".header.html"));
+                    model.Title = directoryInfo.Name;
                 }
 
                 return View(viewType, model);
