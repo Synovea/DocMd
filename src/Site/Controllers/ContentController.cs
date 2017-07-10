@@ -31,7 +31,7 @@ namespace DocMd.Site.Controllers
 
             if (!string.IsNullOrWhiteSpace(_contentOptions.Redirect))
             {
-                return RedirectToAction(nameof(Render), new { path = _contentOptions.Redirect });
+                return Redirect(_contentOptions.Redirect);
             }
 
             if (!string.IsNullOrWhiteSpace(_contentOptions.Layout) &&
